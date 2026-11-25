@@ -45,3 +45,28 @@ struct LifetimeMetricCard: View {
         .accessibilityIdentifier("lifetime-metric-\(icon)")
     }
 }
+
+struct LifetimeTotalWithdrawalsCard: View {
+    let projection: LifetimeProjection
+    let nominal: Bool
+    let afterTax: Bool
+
+    var body: some View {
+        let payments = projection.months.filter { $0.withdrawal > 0 || $0.assetsWithdrawal > 0 }
+        let total = payments.reduce(0) { $0 + projection.income($1, nominal: nominal, afterTax: afterTax) }
+        let detail: String
+        if let first = payments.first, let last = payments.last {
+            let count = payments.count == 1 ? "1 mês de renda" : "\(payments.count) meses de renda"
+            let firstYear = first.id / 12
+            let lastYear = last.id / 12
+            let years = firstYear == lastYear ? String(firstYear) : "\(firstYear)–\(lastYear)"
+            detail = "\(count) · \(years)"
+        } else {
+            detail = "Sem retiradas projetadas"
+        }
+        return LifetimeMetricCard(
+            title: afterTax ? "Total de retiradas após IR" : "Total de retiradas brutas",
+            value: LifeStyle.money(total), detail: detail, icon: "arrow.down.left.circle", tint: .orange
+        )
+    }
+}

@@ -266,10 +266,6 @@ struct SimulatorView: View {
     }
 
     private func metrics(_ projection: LifetimeProjection) -> some View {
-        let firstMonth = scenario.levelsIncome && projection.levelNetIncomeAvailable
-            ? max(projection.conversion, LifetimeClock.month(today) + 1)
-            : projection.firstDistribution
-        let first = projection.months.first { $0.id == firstMonth }
         let last = projection.distributionEnd
         let nominal = scenario.nominal
         let invested = projection.invested(initialPortfolioBalance: scenario.assets.initial, nominal: nominal)
@@ -279,11 +275,7 @@ struct SimulatorView: View {
                                icon: "banknote", tint: .purple)
             LifetimeMetricCard(title: "Títulos RendA+", value: LifeStyle.number(projection.plan.quantity, digits: 4),
                                detail: "Quantidade simulada", icon: "building.columns", tint: LifeStyle.teal)
-            LifetimeMetricCard(title: projection.levelNetIncomeAvailable && scenario.afterTax && !nominal
-                               ? "Renda líquida constante"
-                               : scenario.afterTax ? "Renda inicial após IR" : "Renda inicial bruta",
-                               value: LifeStyle.money(first.map { projection.income($0, nominal: nominal, afterTax: scenario.afterTax) } ?? 0, cents: true),
-                               detail: LifeStyle.month(firstMonth), icon: "arrow.down.left.circle", tint: .orange)
+            LifetimeTotalWithdrawalsCard(projection: projection, nominal: nominal, afterTax: scenario.afterTax)
             LifetimeMetricCard(title: "Último pagamento", value: LifeStyle.month(last),
                                detail: "Fim da distribuição", icon: "calendar", tint: .blue)
         }
